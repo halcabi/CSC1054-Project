@@ -1,0 +1,537 @@
+import javafx.application.*;
+import javafx.scene.*;
+import javafx.stage.*;
+import javafx.scene.layout.*;
+import javafx.scene.control.*;
+import java.util.*;
+import javafx.geometry.*;
+import javafx.scene.paint.*;
+import javafx.scene.image.*;
+import javafx.event.*;
+import javafx.animation.*;
+import javafx.application.*;
+import javafx.scene.*;
+import javafx.stage.*;
+import javafx.scene.layout.*;
+import javafx.scene.control.*;
+import java.util.*;
+import javafx.geometry.*;
+import javafx.scene.paint.*;
+import javafx.scene.image.*;
+import javafx.scene.canvas.*;
+import javafx.scene.input.*;
+import javafx.scene.shape.*;
+
+public class Project extends Application
+{
+   private BorderPane root = new BorderPane();
+   private GridPane gp = new GridPane();
+   private GamePane [][] gamepanes = new GamePane [4][4];
+   Label l = new Label("Welcome to the game!");
+   private int button;
+   private int numOfMoves = 0;
+   private int possMoves = 0;  
+   
+   public void start(Stage stage)
+   {  
+      root.setPrefSize(600, 600);
+      
+      l.setBackground(new Background(new BackgroundFill(Color.PINK, CornerRadii.EMPTY, Insets.EMPTY)));
+      l.setPrefSize(600, 10);
+      l.setAlignment(Pos.CENTER);
+      root.setTop(l); //puts label at top of borderpane
+      
+      GridPane gp = new GridPane();
+      gp.setHgap(10);
+      gp.setVgap(10);
+      
+      for (int i = 0; i < 4; i++) //creates board with ball visible but not buttons
+      {
+         for (int j = 0; j < 4; j++)
+         {
+            gamepanes[i][j] = new GamePane(i,j);
+            gp.add(gamepanes[i][j], i, j);
+            gamepanes[i][j].getBall().setVisible(true);
+            gamepanes[i][j].getTop().setVisible(false);
+            gamepanes[i][j].getBottom().setVisible(false);
+            gamepanes[i][j].getLeft().setVisible(false);
+            gamepanes[i][j].getRight().setVisible(false);    
+            
+            gamepanes[i][j].draw(i, j);    
+         }
+      }
+      
+      gamepanes[0][2].getBall().setVisible(false); //sets up the starting move
+      
+      buttonFlip(); //puts buttons in correct positions
+            
+      gp.setAlignment(Pos.CENTER);
+      root.setCenter(gp);
+     
+      Scene scene = new Scene(root, 600, 600);
+      stage.setScene(scene);
+      stage.setTitle("Project");
+      stage.show();
+   }
+   
+   public void click(int buttonIn, int xIn, int yIn)
+   {
+      int x = xIn;
+      int y = yIn;
+      int button = buttonIn;
+      
+      for (int i = 0; i < 4; i++) //only has to look as top half of board
+      {
+         for (int j = 0; j < 2; j++)
+         {   
+            if(button == 0) //if the button clicked is the top button
+            {  
+               gamepanes[x][y].getBall().setVisible(false); //the ball associated disappears
+               gamepanes[x][y+1].getBall().setVisible(false); //the ball jumped over disappears
+               gamepanes[x][y+2].getBall().setVisible(true); //the ball jumped to appears
+               
+               gamepanes[x][y+1].draw(x, y);
+               buttonFlip(); //flips buttons according
+               if(win())
+               {
+                  l.setText("You win!"); //if this move was the winning move text changes to win
+               }
+               else if(lose())
+               {
+                  l.setText("You lose"); //if this move was the losing move text changes to lose
+               }
+               else
+               {
+                  l.setText("Balls Left: "+ballsLeft()+"   Possible Moves: "+possMoves()); //else returns the # of balls left and # of remaining moves
+               }
+            }
+         }
+      }
+      
+      for (int i = 2; i < 4; i++) //only has to look at right half of board
+      {
+         for (int j = 0; j < 4; j++)
+         {   
+            if(button == 1) //same as button 0
+            {  
+               gamepanes[x][y].getBall().setVisible(false);
+               gamepanes[x-1][y].getBall().setVisible(false);
+               gamepanes[x-2][y].getBall().setVisible(true);
+               
+               gamepanes[x-1][y].draw(x, y);
+               buttonFlip();
+               if(win())
+               {
+                  l.setText("You win!");
+               }
+               else if(lose())
+               {
+                  l.setText("You lose");
+               }
+               else
+               {
+                  l.setText("Balls Left: "+ballsLeft()+"   Possible Moves: "+possMoves());
+               }
+            }
+         }
+      }
+      
+      for (int i = 2; i < 4; i++) //only has to look as bottom half of board       
+      {
+         for (int j = 0; j < 4; j++)
+         {        
+            if(button == 2) //same as button 0
+            {  
+               gamepanes[x][y].getBall().setVisible(false);
+               gamepanes[x][y-1].getBall().setVisible(false);
+               gamepanes[x][y-2].getBall().setVisible(true);
+               
+               gamepanes[x][y-1].draw(x, y);
+               buttonFlip();
+               if(win())
+               {
+                  l.setText("You win!");
+               }
+               else if(lose())
+               {
+                  l.setText("You lose");
+               }
+               else
+               {
+                  l.setText("Balls Left: "+ballsLeft()+"   Possible Moves: "+possMoves());
+               }
+            }
+         }
+      }
+      
+      for (int i = 0; i < 2; i++) //only has to look at left half of board
+      {
+         for (int j = 0; j < 4; j++)
+         {
+            if(button == 3) //same as button 0
+            {  
+               gamepanes[x][y].getBall().setVisible(false);
+               gamepanes[x+1][y].getBall().setVisible(false);
+               gamepanes[x+2][y].getBall().setVisible(true);
+               
+               gamepanes[x+1][y].draw(x, y);
+               buttonFlip();
+               if(win())
+               {
+                  l.setText("You win!");
+               }
+               else if(lose())
+               {
+                  l.setText("You lose");
+               }
+               else
+               {
+                  l.setText("Balls Left: "+ballsLeft()+"   Possible Moves: "+possMoves());
+               }
+            }
+         }
+      }
+   }
+   
+   public void buttonFlip()
+   {
+      for (int i = 0; i < 4; i++)
+      {
+         for (int j = 0; j < 2; j++)
+         {
+            if(!gamepanes[i][j+2].getBall().isVisible() && gamepanes[i][j+1].getBall().isVisible() && gamepanes[i][j].getBall().isVisible()) //if the ball and the one below it is visible and the one below that one is not
+            {
+               gamepanes[i][j].getTop().setVisible(true); //top button will appear
+               gamepanes[i][j].draw(i, j);
+            }
+            else
+               gamepanes[i][j].getTop().setVisible(false); //if not it wont             
+         }
+      }
+      
+      for (int i = 0; i < 4; i++)
+      {
+         for (int j = 2; j < 4; j++)
+         {
+            if(!gamepanes[i][j-2].getBall().isVisible() && gamepanes[i][j-1].getBall().isVisible() && gamepanes[i][j].getBall().isVisible()) //same logic as top button
+            {
+               gamepanes[i][j].getBottom().setVisible(true);
+               gamepanes[i][j].draw(i, j);
+            }
+            else
+               gamepanes[i][j].getBottom().setVisible(false);
+         }
+      }
+      
+      for (int i = 0; i < 2; i++)
+      {
+         for (int j = 0; j < 4; j++)
+         {
+            if(!gamepanes[i+2][j].getBall().isVisible() && gamepanes[i+1][j].getBall().isVisible() && gamepanes[i][j].getBall().isVisible()) //same logic as top button
+            {
+               gamepanes[i][j].getLeft().setVisible(true);
+               gamepanes[i][j].draw(i, j);
+            }
+            else
+               gamepanes[i][j].getLeft().setVisible(false);
+         }
+      }
+      
+      for (int i = 2; i < 4; i++)
+      {
+         for (int j = 0; j < 4; j++)
+         {
+            if(!gamepanes[i-2][j].getBall().isVisible() && gamepanes[i-1][j].getBall().isVisible() && gamepanes[i][j].getBall().isVisible()) //same logic as top button
+            {
+               gamepanes[i][j].getRight().setVisible(true);
+               gamepanes[i][j].draw(i, j);
+            }
+            else
+               gamepanes[i][j].getRight().setVisible(false);
+         }
+      }
+   }
+     
+   private int numberOfBalls = 0;
+   
+   public boolean win()
+   {
+      numberOfBalls = 0;
+      
+      for (int i = 0; i < 4; i++)
+      {
+         for (int j = 0; j < 4; j++)
+         {
+            if(gamepanes[i][j].getBall().isVisible()) //count the # of visible balls
+            {
+               numberOfBalls++;
+            } 
+         }   
+      }
+      
+      if(numberOfBalls == 1) //if there is only one ball visible
+      {
+         return true; //you win!!!
+      }
+      
+      return false; 
+   }
+   
+   public int possMoves()
+   {
+      possMoves = 0;
+      
+      for (int i = 0; i < 4; i++) //this counts the # of buttons visible which is also the # of poss moves
+      {
+         for (int j = 0; j < 4; j++)
+         {
+            if(gamepanes[i][j].getTop().isVisible())
+            {
+               possMoves++;   
+            }
+            
+            if(gamepanes[i][j].getBottom().isVisible())
+            {
+               possMoves++;   
+            }
+            
+            if(gamepanes[i][j].getLeft().isVisible())
+            {
+               possMoves++;   
+            }
+            
+            if(gamepanes[i][j].getRight().isVisible())
+            {
+               possMoves++;   
+            }
+         }
+      }
+      
+      return possMoves;
+   }
+   
+   public int ballsLeft()
+   {
+      numberOfBalls = 0;
+      
+      for (int i = 0; i < 4; i++)
+      {
+         for (int j = 0; j < 4; j++)
+         {
+            if(gamepanes[i][j].getBall().isVisible())
+            {
+               numberOfBalls++; //counts the # of balls visible as the # of balls left
+            }  
+         }   
+      }
+      
+      return numberOfBalls;
+   }
+   
+   public boolean lose()
+   {
+      //this counts that if there are no buttons visible and more than one ball, you lose
+      
+      for (int i = 0; i < 4; i++)
+      {
+         for (int j = 0; j < 4; j++)
+         {
+            if(gamepanes[i][j].getBall().isVisible())
+            {
+               numberOfBalls++;
+            } 
+         }   
+      }
+      
+      for (int i = 0; i < 4; i++)
+      {
+         for (int j = 0; j < 4; j++)
+         {
+            if(gamepanes[i][j].getTop().isVisible())
+            {
+               possMoves++;   
+            }
+            
+            if(gamepanes[i][j].getBottom().isVisible())
+            {
+               possMoves++;   
+            }
+            
+            if(gamepanes[i][j].getLeft().isVisible())
+            {
+               possMoves++;   
+            }
+            
+            if(gamepanes[i][j].getRight().isVisible())
+            {
+               possMoves++;   
+            }
+         }
+      }
+      
+      if (possMoves == 0 && numberOfBalls != 1)
+      {
+         return true;
+      }
+      
+      return false;
+   }
+   
+   public static void main(String[] args)
+   {
+      launch(args);
+   }
+  
+   public class GamePane extends GridPane
+   {
+      private Button top = new Button();
+      private Button bottom = new Button();
+      private Button right = new Button();
+      private Button left = new Button();
+      private Ellipse ball = new Ellipse();
+      private int x;
+      private int y;      
+      
+      public GamePane(int i, int j) //creates the gamepane
+      {  
+         x = i;
+         y = j;
+         top.setPrefSize(80, 20);
+         add(top, 1, 0);  //adds to GridPane
+         top.setOnAction(new ButtonListener());
+         
+         bottom.setPrefSize(80, 20);
+         add(bottom, 1, 2);  //adds to GridPane
+         bottom.setOnAction(new ButtonListener());
+         
+         right.setPrefSize(20, 80);
+         add(right, 2, 1); //adds to GridPane
+         right.setOnAction(new ButtonListener());
+         
+         left.setPrefSize(20, 80);
+         add(left, 0, 1); //adds to GridPane
+         left.setOnAction(new ButtonListener());
+         
+         ball.setFill(Color.DARKSEAGREEN);
+         ball.setRadiusX(40);
+         ball.setRadiusY(40);
+         add(ball, 1, 1); //adds to GridPane
+      }
+      
+      public Ellipse getBall()
+      {
+         return ball;
+      }
+      
+      public Button getTop()
+      {
+         return top;
+      }
+      
+      public Button getBottom()
+      {
+         return bottom;
+      }
+      
+      public Button getLeft()
+      {
+         return left;
+      }
+      
+      public Button getRight()
+      {
+         return right;
+      }
+      
+      public int getX()
+      {
+         return x;
+      }
+      
+      public int getY()
+      {
+         return y;
+      }
+      
+      public void draw (int xIn, int yIn) //draw method, basically if the element is set as visible it is visible in the 2D array of gamepanes 
+      { 
+         try
+         {
+            if(ball.isVisible())
+            {
+               gamepanes[xIn][yIn].getBall().setVisible(true);
+            }
+            else if(!ball.isVisible())
+            {
+               gamepanes[xIn][yIn].getBall().setVisible(false);
+            }
+            
+            if(top.isVisible())
+            {
+               gamepanes[xIn][yIn].getTop().setVisible(true);
+            }
+            else if(!top.isVisible())
+            {
+               gamepanes[xIn][yIn].getTop().setVisible(false);
+            }
+            
+            if(bottom.isVisible())
+            {
+               gamepanes[xIn][yIn].getBottom().setVisible(true);
+            }
+            else if(!bottom.isVisible())
+            {
+               gamepanes[xIn][yIn].getBottom().setVisible(false);
+            }
+            
+            if(left.isVisible())
+            {
+               gamepanes[xIn][yIn].getLeft().setVisible(true);
+            }
+            else if(!left.isVisible())
+            {
+               gamepanes[xIn][yIn].getLeft().setVisible(false);
+            }
+
+            if(right.isVisible())
+            {
+               gamepanes[xIn][yIn].getRight().setVisible(true);
+            }
+            else if(!right.isVisible())
+            {
+               gamepanes[xIn][yIn].getRight().setVisible(false);
+            }
+         }
+         catch (ArrayIndexOutOfBoundsException e)
+         {
+         
+         }
+      }
+      
+      public class ButtonListener implements EventHandler<ActionEvent>
+      {
+         public void handle(ActionEvent e)
+         {
+            if(top == e.getSource()) //when buttons are clicked
+            {
+               click(0, getX(), getY()); //click method happens    
+            }
+            
+            if(right == e.getSource()) //when buttons are clicked
+            {
+               click(1, getX(), getY());    
+            }
+            
+            if(bottom == e.getSource()) //when buttons are clicked
+            {
+               click(2, getX(), getY());     
+            }
+            
+            if(left == e.getSource()) //when buttons are clicked
+            {
+               click(3, getX(), getY());     
+            }
+         }
+      }
+   }
+}
